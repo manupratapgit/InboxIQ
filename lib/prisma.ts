@@ -1,11 +1,8 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaNeon } from '@prisma/adapter-neon'
-import { Pool } from '@neondatabase/serverless'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 function createPrismaClient() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL! })
-  // @ts-expect-error adapter type mismatch between neon versions
-  const adapter = new PrismaNeon(pool)
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
