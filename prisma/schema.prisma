@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  supabaseId  String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  gmailConnection GmailConnection?
+  preferences     UserPreferences?
+  digests         Digest[]
+}
+
+model GmailConnection {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gmailEmail     String
+  accessToken    String
+  refreshToken   String
+  tokenExpiresAt DateTime
+  scope          String
+  connectedAt    DateTime  @default(now())
+  lastSyncAt     DateTime?
+  isActive       Boolean   @default(true)
+}
+
+model UserPreferences {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  digestTime      String   @default("07:00")
+  timezone        String   @default("Asia/Kolkata")
+  digestEnabled   Boolean  @default(true)
+  digestTone      String   @default("detailed")
+  includeUrgent   Boolean  @default(true)
+  includeImportant Boolean @default(true)
+  includeFyi      Boolean  @default(true)
+  includeJobs     Boolean  @default(false)
+  cvText          String?
+  targetRoles     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Digest {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime
+  status          String    @default("pending")
+  rawEmailCount   Int?
+  summaryMarkdown String?
+  summaryHtml     String?
+  errorMessage    String?
+  generatedAt     DateTime?
+  sentAt          DateTime?
+  triggerJobId    String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId, date])
+}
